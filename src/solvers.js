@@ -27,28 +27,29 @@ window.findNRooksSolution = function (n) {
     matrix.push(board.attributes[i].slice());
   }
 
-  const helper = function (matrix, row) {
+  const helper = function (matrix, row, availableCols) {
     // base case
     if (row === n) {
       let board = new Board(matrix);
-      if (board.hasAnyColConflicts() === false) {
-        console.log(matrix);
-      }
+      solution = matrix;
       return;
     }
 
-    for (let i = 0; i < matrix[row].length; ++i) {
-      let copy = JSON.parse(JSON.stringify(matrix));
+    else if (solution === undefined) {
+      for (let i = 0; i < availableCols.length; ++i) {
+        let copy = JSON.parse(JSON.stringify(matrix));
+        let index = availableCols[i];
+        copy[row][index] = 1;
 
-      copy[row][i] = 1;
-
-      // console.log('matrix ' + matrix, 'copy ' + copy);
-
-      helper(copy, row + 1);
+        // console.log('matrix ' + matrix, 'copy ' + copy);
+        let copyAvailableCols = availableCols.slice()
+        copyAvailableCols.splice(i, 1);
+        helper(copy, row + 1, copyAvailableCols);
+      }
     }
   };
 
-  helper(matrix, 0);
+  helper(matrix, 0, _.range(0, n));
   console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
   return solution;
 };
@@ -56,8 +57,34 @@ window.findNRooksSolution = function (n) {
 // return the number of nxn chessboards that exist, with n rooks placed such 
 // that none of them can attack each other
 window.countNRooksSolutions = function (n) {
-  var solutionCount = undefined; //fixme
+  var solutionCount = 0; //fixme
+  let board = new Board({ 'n': n });
 
+  let matrix = [];
+  for (let i = 0; i < n; ++i) {
+    matrix.push(board.attributes[i].slice());
+  }
+
+  const helper = function (matrix, row, availableCols) {
+    // base case
+    if (row === n) {
+      let board = new Board(matrix);
+      solutionCount++;
+      return;
+    }
+
+    for (let i = 0; i < availableCols.length; ++i) {
+      let copy = JSON.parse(JSON.stringify(matrix));
+      let index = availableCols[i];
+      copy[row][index] = 1;
+
+      let copyAvailableCols = availableCols.slice()
+      copyAvailableCols.splice(i, 1);
+      helper(copy, row + 1, copyAvailableCols);
+    }
+  };
+
+  helper(matrix, 0, _.range(0, n));
   console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
   return solutionCount;
 };
@@ -65,18 +92,84 @@ window.countNRooksSolutions = function (n) {
 // return a matrix (an array of arrays) representing a single nxn chessboard, 
 // with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function (n) {
-  var solution = undefined; //fixme
+  let board = new Board({ 'n': n });
+  let solution = board.rows();
+  let keepGoing = true;
 
-  console.log(
-      'Single solution for ' + n + ' queens:', JSON.stringify(solution));
+  let matrix = [];
+  for (let i = 0; i < n; ++i) {
+    matrix.push(board.attributes[i].slice());
+  }
+
+  const helper = function (matrix, row, availableCols) {
+    // base case
+    if (row === n) {
+      let board = new Board(matrix);
+      if (board.hasAnyMajorDiagonalConflicts() === false &&
+          board.hasAnyMinorDiagonalConflicts() === false &&
+          keepGoing === true) {
+        console.log(matrix);
+        solution = matrix;
+        keepGoing = false;
+      }
+      return;
+    }
+
+    else if (keepGoing === true) {  
+      for (let i = 0; i < availableCols.length; ++i) {
+        let copy = JSON.parse(JSON.stringify(matrix));
+        let index = availableCols[i];
+        copy[row][index] = 1;
+
+        // console.log('matrix ' + matrix, 'copy ' + copy);
+        let copyAvailableCols = availableCols.slice()
+        copyAvailableCols.splice(i, 1);
+        helper(copy, row + 1, copyAvailableCols);
+      }
+    }
+
+  };
+
+  helper(matrix, 0, _.range(0, n));
+  console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
   return solution;
 };
 
 // return the number of nxn chessboards that exist, with n queens placed such 
 // that none of them can attack each other
 window.countNQueensSolutions = function (n) {
-  var solutionCount = undefined; //fixme
+  var solutionCount = 0; //fixme
+  let board = new Board({ 'n': n });
 
+  let matrix = [];
+  for (let i = 0; i < n; ++i) {
+    matrix.push(board.attributes[i].slice());
+  }
+
+  const helper = function (matrix, row, availableCols) {
+    // base case
+    if (row === n) {
+      let board = new Board(matrix);
+      if (board.hasAnyMajorDiagonalConflicts() === false &&
+          board.hasAnyMinorDiagonalConflicts() === false) {
+        solutionCount++;
+      }
+      return;
+    }
+
+    for (let i = 0; i < availableCols.length; ++i) {
+      let copy = JSON.parse(JSON.stringify(matrix));
+      let index = availableCols[i];
+      copy[row][index] = 1;
+
+      // console.log('matrix ' + matrix, 'copy ' + copy);
+      let copyAvailableCols = availableCols.slice()
+      copyAvailableCols.splice(i, 1);
+      helper(copy, row + 1, copyAvailableCols);
+    }
+  };
+
+  helper(matrix, 0, _.range(0, n));
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
   return solutionCount;
 };
